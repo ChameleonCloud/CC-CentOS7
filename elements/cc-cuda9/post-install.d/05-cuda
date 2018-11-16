@@ -33,29 +33,23 @@ yum install -y kernel-devel-$(uname -r) kernel-headers-$(uname -r) dkms
 
 # Get the NVIDIA CUDA Toolkit for Centos
 # https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=CentOS&target_version=7&target_type=runfilelocal
-wget -nv https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.85_387.26_linux
-mv cuda_9.1.85_387.26_linux cuda_9.1.85_387.26_linux.run
-wget -nv https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/1/cuda_9.1.85.1_linux
-mv cuda_9.1.85.1_linux cuda_9.1.85.1_linux.run
-wget -nv https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/2/cuda_9.1.85.2_linux
-mv cuda_9.1.85.2_linux cuda_9.1.85.2_linux.run
-wget -nv https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/3/cuda_9.1.85.3_linux
-mv cuda_9.1.85.3_linux cuda_9.1.85.3_linux.run
+wget -nv https://developer.nvidia.com/compute/cuda/9.2/Prod2/local_installers/cuda_9.2.148_396.37_linux
+mv cuda_9.2.148_396.37_linux cuda_9.2.148_396.37_linux.run
+wget -nv https://developer.nvidia.com/compute/cuda/9.2/Prod2/patches/1/cuda_9.2.148.1_linux
+mv cuda_9.2.148.1_linux cuda_9.2.148.1_linux.run
 
 # Install the NVIDIA CUDA Toolkit for Centos
-sudo sh cuda_9.1.85_387.26_linux.run --samples --toolkit --driver --silent --verbose --tmpdir $NVIDIA_TMP_FOLDER
+sudo sh cuda_9.2.148_396.37_linux.run --samples --toolkit --driver --silent --verbose --tmpdir $NVIDIA_TMP_FOLDER
 
 # Install patches
-sudo sh cuda_9.1.85.1_linux.run --silent --accept-eula
-sudo sh cuda_9.1.85.2_linux.run --silent --accept-eula
-sudo sh cuda_9.1.85.3_linux.run --silent --accept-eula
+sudo sh cuda_9.2.148.1_linux.run --silent --accept-eula
 
 #############################################################
 # Post-Installation
 #############################################################
 
 PROFILE_SCRIPT=/etc/profile.d/cuda.sh
-CUDA_ROOT=/usr/local/cuda-9.1
+CUDA_ROOT=/usr/local/cuda-9.2
 
 # Mandatory Actions
 cat > $PROFILE_SCRIPT << EOM

@@ -111,7 +111,7 @@ rm -rf $RUNFILEDIR
 cd /opt/chameleon
 git clone https://github.com/ChameleonCloud/collectd-cuda.git
 chmod 777 -R collectd-cuda/
-cd collectd-ceilometer-cuda
+cd collectd-cuda
 python setup.py install
 
 cat > /etc/collectd.d/collectd-cuda.conf <<EOF

@@ -114,7 +114,7 @@ chmod 777 -R collectd-cuda/
 cd collectd-ceilometer-cuda
 python setup.py install
 
-cat > /etc/collectd.d/collectd.cuda.conf <<EOF
+cat > /etc/collectd.d/collectd-cuda.conf <<EOF
 LoadPlugin exec
 <Plugin exec>
     Exec "cc" "/opt/chameleon/collectd-cuda/collectd_cuda.sh"

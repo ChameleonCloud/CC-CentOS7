@@ -28,6 +28,14 @@ RUNFILEDIR=cuda-runfiles
 
 mkdir $RUNFILEDIR
 
+# compare chroot kernel with running kernel
+CHROOT_KERNEL=$(basename $(ls -td -- /lib/modules/*/ | head -n 1))
+RUNNING_KERNEL=$(uname -r)
+if [ "$CHROOT_KERNEL" != "$RUNNING_KERNEL" ]; then
+	echo "Unmatched kernel!"
+	exit 1	
+fi
+
 # Install kernel headers and wget
 yum install -y kernel-devel-$(uname -r) kernel-headers-$(uname -r) dkms
 

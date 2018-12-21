@@ -10,6 +10,7 @@ except ImportError:
 import io
 import operator
 import os
+import requests
 import sys
 
 PATH = 'https://cloud.centos.org/centos/7/images/'

@@ -12,6 +12,19 @@ import operator
 import os
 import sys
 
+PATH = 'https://cloud.centos.org/centos/7/images/'
+INDEX = PATH + 'image-index'
+
+def image_index():
+    index = requests.get(INDEX)
+    filelike = io.StringIO(index.text)
+    cp = configparser.ConfigParser()
+    cp.readfp(filelike)
+    data = {sec: dict(cp.items(sec)) for sec in cp.sections()}
+    for sec in data:
+        data[sec]['url'] = PATH + data[sec]['file']
+    return data
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
 

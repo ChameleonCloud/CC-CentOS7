@@ -6,4 +6,4 @@ fi
 set -eu
 set -o pipefail
 
-yum install -y centos-release-openstack-pike
+yum install -y centos-release-openstack-rocky

@@ -9,6 +9,8 @@ set -o pipefail
 # install cloudfuse
 git clone https://github.com/redbo/cloudfuse.git
 cd cloudfuse/
+# Space in project nickname is allowed
+sed -i 's/tenant = %\[^\\r\\n \]/tenant = %\[^\\r\\n\]/' cloudfuse.c
 ./configure
 make
 make install

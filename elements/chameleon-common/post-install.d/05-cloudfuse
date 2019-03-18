@@ -7,16 +7,94 @@ set -eu
 set -o pipefail
 
 # install cloudfuse
-git clone https://github.com/redbo/cloudfuse.git
-cd cloudfuse/
-# Space in project nickname is allowed
-sed -i 's/tenant = %\[^\\r\\n \]/tenant = %\[^\\r\\n\]/' cloudfuse.c
+#git clone https://github.com/redbo/cloudfuse.git
+git clone https://github.com/ChameleonCloud/cc-cloudfuse.git
+cd cc-cloudfuse/
 ./configure
 make
 make install
 
+# auto-mount object store
+cat > /etc/auto_mount_readme <<- EOM
+cc-cloudfuse
+___________________________________________________________________
+The "my_mounting_point" directory under /home/cc is the mounting
+point to the Chameleon object store, so that you can access the 
+object store as a file system. 
+
+A mounting tool known as cc-cloudfuse has been installed. You can 
+use cc-cloudfuse to mount/unmout the Chameleon object store.
+Before mounting, configure your Chameleon credentials by sourcing 
+the Chameleon openrc file, or by specifying them in ~/.cloudfuse 
+file, or by passing them as options. 
+
+To mount:
+cc-cloudfuse mount <mounting_dir> [options]
+
+To see details about mount options:
+cc-cloudfuse mount -h
+
+To unmount:
+cc-cloudfuse unmount <mounting_dir>
+
+You can learn more about cc-cloudfuse by visiting Chameleon user
+documentation at 
+https://chameleoncloud.readthedocs.io/en/latest/technical/swift.html#mounting-object-store-as-a-file-system
+EOM
+
+cat > /etc/auto_mount_object_store <<- EOM
+#!/bin/bash
+mkdir /home/cc/my_mounting_point
+
+OPENSTACK_VENDOR_DATA='http://169.254.169.254/openstack/latest/vendor_data.json'
+OPENSTACK_VENDOR_DATA_2='http://169.254.169.254/openstack/latest/vendor_data2.json'
+
+JSON_VENDOR_DATA=\$(curl -s \$OPENSTACK_VENDOR_DATA_2)
+if [ \$JSON_VENDOR_DATA = '{}' ]; then
+  JSON_VENDOR_DATA=\$(curl -s \$OPENSTACK_VENDOR_DATA)
+fi
+
+function extract_json_key {
+  RESULT=\$(echo "\$2" | sed "s/.*\$1\": \"//g" | sed 's/".*//g')
+  echo "\$RESULT"
+}
+  
+TOKEN=\$(extract_json_key "instance_metrics_writer_token" "\$JSON_VENDOR_DATA")
+PROJECT_ID=\$(extract_json_key "project_id" "\$JSON_VENDOR_DATA")
+AUTH_URL_V3=\$(extract_json_key "auth_url_v3" "\$JSON_VENDOR_DATA")
+REGION=\$(extract_json_key "region" "\$JSON_VENDOR_DATA")
+
+cc-cloudfuse mount /home/cc/my_mounting_point -o authtoken="\$TOKEN",projectid="\$PROJECT_ID",authurl="\$AUTH_URL_V3",region="\$REGION"
+sudo mv /etc/auto_mount_readme /home/cc/README
+sudo chown -R cc:cc /home/cc/README
+EOM
+
+# Add startup script
+chmod a+x /etc/auto_mount_object_store
+echo "MAX_ITER=30
+ITER=0
+while true
+do
+  if [ \$ITER -lt \$MAX_ITER ]; then
+    id -u cc
+    CC_EXISTS=\$?
+    if [ \$CC_EXISTS -eq 0 ]; then
+      su cc -c \"/etc/auto_mount_object_store\"
+      break
+    else
+      sleep 2
+    fi
+  else
+    break
+  fi
+  ITER=\$((ITER + 1))
+done" >> /etc/rc.local
+
+# Ensure that /etc/rc.local is executable
+chmod +x /etc/rc.local
+
 # clean up
 cd ..
-rm -rf cloudfuse
+rm -rf cc-cloudfuse
 
 exit 0

@@ -50,7 +50,7 @@ OPENSTACK_VENDOR_DATA='http://169.254.169.254/openstack/latest/vendor_data.json'
 OPENSTACK_VENDOR_DATA_2='http://169.254.169.254/openstack/latest/vendor_data2.json'
 
 JSON_VENDOR_DATA=\$(curl -s \$OPENSTACK_VENDOR_DATA_2)
-if [ \$JSON_VENDOR_DATA = '{}' ]; then
+if [ "\$JSON_VENDOR_DATA" = '{}' ]; then
   JSON_VENDOR_DATA=\$(curl -s \$OPENSTACK_VENDOR_DATA)
 fi
 

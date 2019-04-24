@@ -34,4 +34,5 @@ fi
 
 # pip install --upgrade pip
 # this is a bit dirty, you should probably use a virtualenv
+pip install networkx==2.2
 pip install diskimage-builder

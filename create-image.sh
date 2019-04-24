@@ -28,6 +28,9 @@ while [ "$1" != "" ]; do
         -g | --region )         shift
                                 REGION=$1
                                 ;;
+        -k | --kvm )            shift
+                                KVM=$1
+                                ;;
         * )                     echo "Unrecognized option $1"
                                 exit 1
     esac
@@ -134,7 +137,16 @@ if [ -f "$OUTPUT_FILE" ]; then
   rm -f "$OUTPUT_FILE"
 fi
 
-disk-image-create chameleon-common $ELEMENTS $EXTRA_ELEMENTS $AGENT_ELEMENTS $DEPLOYMENT_BASE_ELEMENTS -o $OUTPUT_FILE --no-tmpfs --root-label img-rootfs
+SITE_ELEMENTS=""
+if $KVM; then
+  echo "kvm image"
+  SITE_ELEMENTS="kvm"
+else
+  echo "chi image"
+  SITE_ELEMENTS="chi"
+fi
+
+disk-image-create chameleon-common $ELEMENTS $SITE_ELEMENTS $EXTRA_ELEMENTS $AGENT_ELEMENTS $DEPLOYMENT_BASE_ELEMENTS -o $OUTPUT_FILE --no-tmpfs --root-label img-rootfs
 
 if [ -f "$OUTPUT_FILE.qcow2" ]; then
   mv $OUTPUT_FILE.qcow2 $OUTPUT_FILE

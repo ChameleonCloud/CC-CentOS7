@@ -6,7 +6,14 @@ fi
 set -eu
 set -o pipefail
 
-yum install -y rubygem-g5k-checks
+sudo yum install -y git bridge-utils hwloc
+
+git clone https://github.com/ChameleonCloud/g5k-checks.git
+
+pushd g5k-checks
+sudo ./scripts/build_rpm.sh
+sudo yum localinstall -y /root/rpmbuild/RPMS/noarch/rubygem-g5k-checks-0.7.5-1.el7.noarch.rpm
+popd
 
 ln -s /usr/bin/g5k-checks /usr/bin/cc-checks
 

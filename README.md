@@ -7,7 +7,7 @@ There are a couple variants of images it can produce, assembled using the
 needed elements:
 
 * `base`
-* `gpu` - Includes CUDA8 / CUDA9 framework
+* `gpu` - Includes CUDA framework
 * `fpga` - Includes Altera Nallatech tools
 
 Images are created with [diskimage-builder](http://docs.openstack.org/developer/diskimage-builder)

@@ -33,7 +33,7 @@ def main():
         help='Revision to build with, usually of the format YYMM', required=True)
     parser.add_argument('-v', '--variant', type=str,
         help='Image variant to build.') # extra elements defined in the .sh
-    parser.add_argument('-c', '--cuda-version', type=str, default='cuda9',
+    parser.add_argument('-c', '--cuda-version', type=str, default='cuda10',
         help='CUDA version to install. Ignore if the variant is not gpu.')
     parser.add_argument('-g', '--region', type=str, required=True, help='Region name (for FPGA)')
     parser.add_argument('-k', '--kvm', action='store_true', help='Present if build image for KVM site') 

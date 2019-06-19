@@ -49,6 +49,9 @@ case "$VARIANT" in
   elif [ "$CUDA_VERSION" == "cuda9" ]; then
   	IMAGE_NAME="CC-CentOS7-CUDA9"
     EXTRA_ELEMENTS="cc-cuda9"
+  elif [ "$CUDA_VERSION" == "cuda10" ]; then
+  	IMAGE_NAME="CC-CentOS7-CUDA10"
+    EXTRA_ELEMENTS="cc-cuda10"
   elif [ "$CUDA_VERSION" == "" ]; then
   	echo "You must specify a cuda version"
   	exit 1

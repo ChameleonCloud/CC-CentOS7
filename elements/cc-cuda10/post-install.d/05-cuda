@@ -1,0 +1,117 @@
+#!/bin/bash
+
+if [ ${DIB_DEBUG_TRACE:-0} -gt 0 ]; then
+    set -x
+fi
+set -o errexit
+set -o nounset
+set -o pipefail
+
+
+#############################################################
+# Pre-Installation
+#############################################################
+
+NVIDIA_TMP_FOLDER=/root/tmp
+mkdir -p $NVIDIA_TMP_FOLDER
+
+# Install libraries that are required by CUDA to be fully installed
+yum install -y freeglut-devel.x86_64 freeglut.x86_64 libXi-devel.x86_64 \
+    mesa-libGL-devel.x86_64 mesa-libGLES.x86_64 mesa-libGLU-devel.x86_64 \
+    mesa-libGLw-devel.x86_64 mesa-libGLw.x86_64
+
+#############################################################
+# Installation (runfile)
+#############################################################
+
+RUNFILEDIR=cuda-runfiles
+
+mkdir $RUNFILEDIR
+
+# compare chroot kernel with running kernel
+CHROOT_KERNEL=$(basename $(ls -td -- /lib/modules/*/ | head -n 1))
+RUNNING_KERNEL=$(uname -r)
+if [ "$CHROOT_KERNEL" != "$RUNNING_KERNEL" ]; then
+	echo "Unmatched kernel!"
+	exit 1	
+fi
+
+# Install kernel headers and wget
+yum install -y kernel-devel-$(uname -r) kernel-headers-$(uname -r) dkms
+
+# Get the NVIDIA CUDA Toolkit for Centos
+wget -nv https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.168_418.67_linux.run
+
+# Install the NVIDIA CUDA Toolkit for Centos
+sudo sh cuda_10.1.168_418.67_linux.run --samples --toolkit --driver --silent --tmpdir $NVIDIA_TMP_FOLDER
+
+#############################################################
+# Post-Installation
+#############################################################
+
+PROFILE_SCRIPT=/etc/profile.d/cuda.sh
+CUDA_ROOT=/usr/local/cuda-10.1
+
+# Mandatory Actions
+cat > $PROFILE_SCRIPT << EOM
+#!/bin/sh
+export PATH=$CUDA_ROOT/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_ROOT/lib64
+EOM
+chmod +x $PROFILE_SCRIPT
+echo "$CUDA_ROOT/lib64" > /etc/ld.so.conf.d/nvidia-x86_64.conf
+ldconfig
+
+# Compile deviceQuery sample (useful for testing)
+DEVICE_QUERY_PATH="$CUDA_ROOT/samples/1_Utilities/deviceQuery"
+source /etc/environment
+pushd $DEVICE_QUERY_PATH
+make
+popd
+
+# Generate startup script that load information from NVIDIA device query. This
+# forces NVIDIA devices to be ready when booting a GPU node.
+cat > /etc/load_nvidia_info <<- EOM
+#!/bin/bash
+DEVICE_QUERY_PATH="$DEVICE_QUERY_PATH"
+OUTPUT_FILE_PATH="/opt/nvidia.txt"
+
+pushd \$DEVICE_QUERY_PATH
+./deviceQuery > \$OUTPUT_FILE_PATH
+chmod 777 \$OUTPUT_FILE_PATH
+popd
+EOM
+
+# Add startup script that load information from NVIDIA device query
+chmod a+x /etc/load_nvidia_info
+echo "/etc/load_nvidia_info" >> /etc/rc.local
+
+# Ensure that /etc/rc.local is executable
+chmod +x /etc/rc.local
+
+#############################################################
+# Cleaning
+#############################################################
+
+# Clean the tmp folder used by CUDA
+rm -rf $NVIDIA_TMP_FOLDER
+
+# Remove the CUDA Installer
+rm -rf $RUNFILEDIR
+
+#############################################################
+# Metrics
+#############################################################
+
+cd /opt/chameleon
+git clone https://github.com/ChameleonCloud/collectd-cuda.git
+chmod 777 -R collectd-cuda/
+
+cat > /etc/collectd.d/collectd-cuda.conf <<EOF
+LoadPlugin exec
+<Plugin exec>
+    Exec "cc" "/opt/chameleon/collectd-cuda/collectd_cuda.sh"
+</Plugin>
+EOF
+
+exit 0

@@ -1,0 +1,43 @@
+#!/bin/bash
+
+if [ ${DIB_DEBUG_TRACE:-0} -gt 0 ]; then
+    set -x
+fi
+set -o errexit
+set -o nounset
+set -o pipefail
+
+#############################################################
+# Pre-Installation
+#############################################################
+
+MPICH_TMP_FOLDER=/root/tmp
+mkdir -p $MPICH_TMP_FOLDER
+
+#############################################################
+# Installation
+#############################################################
+
+cd $MPICH_TMP_FOLDER
+
+# Get the MPICH 3.3.1
+wget -nv https://www.mpich.org/static/downloads/3.3.1/mpich-3.3.1.tar.gz
+tar xvfz mpich-3.3.1.tar.gz && cd mpich-3.3.1
+
+# build and install MPICH
+./configure
+make -j
+make install
+
+# install cpi example
+cd examples
+mpicc -o /usr/local/bin/cpi cpi.c
+
+#############################################################
+# Cleaning
+#############################################################
+
+# Clean the tmp folder
+rm -rf $MPICH_TMP_FOLDER
+
+exit 0

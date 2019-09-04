@@ -1,5 +1,7 @@
 # CC-CentOS7
 
+[![Launch on Chameleon](https://img.shields.io/badge/launch-chameleon-brightgreen)](https://jupyter.chameleoncloud.org/import?source=git&src_path=chameleoncloud/CC-CentOS7)
+
 This directory contains the scripts used to generate the Chameleon KVM and
 bare-metal CentOS 7 images. It relies on diskimage-builder.
 

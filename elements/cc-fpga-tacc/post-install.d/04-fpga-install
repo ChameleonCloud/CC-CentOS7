@@ -24,7 +24,7 @@ PKG_SOURCE=$FPGA_INSTALL_FOLDER/fpga
 # Install kernel headers, wget, and gcc
 yum install -y kernel-devel-$(uname -r) kernel-headers-$(uname -r) gcc gcc-c++
 
-# Install ALtera RunTime Environment
+# Install Altera RunTime Environment
 yum install -y $PKG_SOURCE/aocl-rte-16.0.0-1.x86_64.rpm
 
 # Create profile script

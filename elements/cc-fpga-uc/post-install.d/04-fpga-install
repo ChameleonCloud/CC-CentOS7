@@ -17,41 +17,71 @@ mkdir -p $FPGA_INSTALL_FOLDER
 sudo cp -r $SCRIPTDIR/fpga $FPGA_INSTALL_FOLDER
 PKG_SOURCE=$FPGA_INSTALL_FOLDER/fpga
 
-QUARTUS_ROOTDIR=/etc/intelFPGA_pro/17.1
+QUARTUS_ROOTDIR=/opt/intelFPGA_pro/17.1
 
 #############################################################
 # Installation
 #############################################################
 
-yum install -y libpng12 udev usbutils
-ln -s /lib64/libudev.so.1 /lib64/libudev.so.0
+yum install -y kernel-devel-$(uname -r) kernel-headers-$(uname -r) gcc gcc-c++
 
 cd $PKG_SOURCE
-./AOCLProSetup-17.1.0.240-linux.run --mode unattended --installdir $QUARTUS_ROOTDIR --accept_eula 1
+# install quartus prime
+./QuartusProProgrammerSetup-17.1.0.240-linux.run --mode unattended --installdir $QUARTUS_ROOTDIR --accept_eula 1
+# install altera rte
+yum install -y aocl-pro-rte-17.1.0-240.x86_64.rpm
 
-mkdir -p /etc/OpenCL/vendors
-cp $QUARTUS_ROOTDIR/hld/Altera.icd /etc/OpenCL/vendors << EOF
-y
-EOF
+# Create profile script
+cat > /etc/profile.d/altera.sh <<- EOM
+#!/bin/bash
+export QUARTUS_ROOTDIR=$QUARTUS_ROOTDIR
+export ALTERAOCLSDKROOT="/opt/altera/aocl-pro-rte"
+export AOCL_BOARD_PACKAGE_ROOT=\$ALTERAOCLSDKROOT/board/de5a_net_e1
+export ACL_BOARD_VENDOR_PATH=\$AOCL_BOARD_PACKAGE_ROOT/
 
-tar xvfz $PKG_SOURCE/de5a_net_e1.tar.gz -C $QUARTUS_ROOTDIR/hld/board
+export PATH=\$QUARTUS_ROOTDIR/qprogrammer/linux64/jre64/bin:\$PATH
+export PATH=\$PATH:\$QUARTUS_ROOTDIR/bin
+export PATH=\$PATH:\$ALTERAOCLSDKROOT/bin
+export PATH=\$PATH:\$QUARTUS_ROOTDIR/qprogrammer/bin
 
-cp $PKG_SOURCE/aoc-env-de5anet.sh /etc/profile.d/
-source /etc/profile.d/aoc-env-de5anet.sh
+export QUARTUS_ROOTDIR_OVERRIDE=\$QUARTUS_ROOTDIR/qprogrammer
+export PATH=\$PATH:\$QUARTUS_ROOTDIR/qprogrammer/sopc_builder/bin/ # for qsys-script
+export PATH=\$PATH:\$QUARTUS_ROOTDIR/modelsim_ae/linuxaloem/ # for vsim
 
-# Fix bug in aocl install in Intel FPGA SDK for OpenCL17.1
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$ALTERAOCLSDKROOT/linux64/lib
+export LD_LIBRARY_PATH=\LD_LIBRARY_PATH:\$ALTERAOCLSDKROOT/host/linux64/lib
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$AOCL_BOARD_PACKAGE_ROOT/linux64/lib
+
+export QUARTUS_64BIT=1
+
+export QSYS_ROOTDIR=\$QUARTUS_ROOTDIR/qprogrammer/sopc_builder/bin
+
+source /opt/altera/aocl-pro-rte/init_opencl.sh
+
+echo
+echo LM_LICENSE_FILE: \$LM_LICENSE_FILE
+echo QUARTUS_ROOTDIR: \$QUARTUS_ROOTDIR
+echo AOCL_BOARD_PACKAGE_ROOT: \$AOCL_BOARD_PACKAGE_ROOT
+echo
+EOM
+
+source /etc/profile.d/altera.sh
+
+tar xvfz $PKG_SOURCE/de5a_net_e1.tar.gz -C $ALTERAOCLSDKROOT/board/
+
+# fix bug in aocl install in Intel FPGA SDK for OpenCL17.1
 # https://www.intel.com/content/www/us/en/programmable/support/support-resources/knowledge-base/embedded/2017/why-does-aocl-install-and-aocl-uninstall-fail-in-intel-fpga-sdk-.html
-sed -i '110s/isWindowsOS()/acl::Env::is_windows()/' /etc/intelFPGA_pro/17.1/hld/share/lib/perl/acl/Command.pm
-sed -i '111s/mysystem_full({}, @cmd);/system(@cmd);/' /etc/intelFPGA_pro/17.1/hld/share/lib/perl/acl/Command.pm
+sed -i '110s/isWindowsOS()/acl::Env::is_windows()/' $ALTERAOCLSDKROOT/share/lib/perl/acl/Command.pm
+sed -i '111s/mysystem_full({}, @cmd);/system(@cmd);/' $ALTERAOCLSDKROOT/share/lib/perl/acl/Command.pm
 
-# Build kernel module
+# build kernel module
 aocl install << EOF
 y
 EOF
 
 # Add startup script 
-chmod a+x /etc/profile.d/aoc-env-de5anet.sh
-echo "/etc/profile.d/aoc-env-de5anet.sh" >> /etc/rc.local
+chmod a+x /etc/profile.d/altera.sh
+echo "/etc/profile.d/altera.sh" >> /etc/rc.local
 
 # Ensure that /etc/rc.local is executable
 chmod +x /etc/rc.local

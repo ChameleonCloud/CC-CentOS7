@@ -8,6 +8,10 @@ set -ex
 # * via Yum: git python-pip PyYAML qemu-img xfsprogs xz
 # * via Pip: diskimage-builder
 
+export DIB_PYTHON_VERSION=2
+export DIB_RELEASE=7
+export YUM=yum
+
 VARIANT="base"
 CUDA_VERSION=""
 TMPDIR=`mktemp -d`

@@ -57,20 +57,8 @@ yum install -y \
     perl-Thread-Queue \
     perl-XML-Parser \
     puppet \
-    python-cinderclient \
-    python-cinderclient-doc \
-    python-glanceclient \
-    python-glanceclient-doc \
-    python-heatclient \
-    python-heatclient-doc \
-    python-keystoneclient \
-    python-keystoneclient-doc \
-    python-neutronclient \
-    python-novaclient \
-    python-novaclient-doc \
-    python-openstackclient \
-    python-swiftclient \
-    python-swiftclient-doc \
+    python3 \
+    python3-setuptools \
     python2-gnocchiclient \
     rcs \
     redhat-lsb-core \
@@ -85,6 +73,16 @@ yum install -y \
     systemtap-devel \
     systemtap-runtime \
     unzip
+    
+pip3 install \
+    python-cinderclient \
+    python-glanceclient \
+    python-heatclient \
+    python-keystoneclient \
+    python-neutronclient \
+    python-novaclient \
+    python-openstackclient \
+    python-swiftclient
 
 # Missing dependency os-collect-config
 yum install -y python2-oslo-log

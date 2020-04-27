@@ -79,3 +79,7 @@ sed -i -e 's/^enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf
 # https://review.openstack.org/#/c/568180/
 # Remove when diskimage-builder has a new release
 echo 'centos' > /etc/yum/vars/contentdir
+
+
+# clean cache
+yum clean all

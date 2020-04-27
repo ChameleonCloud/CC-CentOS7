@@ -18,12 +18,20 @@ INDEX = PATH + 'image-index'
 
 def image_index():
     index = requests.get(INDEX)
-    filelike = io.StringIO(index.text)
-    cp = configparser.ConfigParser()
-    cp.readfp(filelike)
-    data = {sec: dict(cp.items(sec)) for sec in cp.sections()}
-    for sec in data:
-        data[sec]['url'] = PATH + data[sec]['file']
+    data = {}
+    current_section = None
+    current_dict = {}
+    for line in index.content.split('\n'):
+        if re.match('^\[.*\]$', line):
+            if 'arch' in current_dict and current_dict['arch'] == 'x86_64':
+                data[current_section] = current_dict
+                data[current_section]['url'] = PATH + data[current_section]['file']
+            current_section = line.replace('[', '').replace(']', '')
+            current_dict = {}
+        else:
+            key_val = line.split('=')
+            if len(key_val) == 2:
+                current_dict[key_val[0]] = key_val[1]
     return data
 
 def main():

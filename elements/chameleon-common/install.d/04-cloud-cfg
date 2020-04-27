@@ -35,9 +35,8 @@ datasource:
   OpenStack:
     metadata_urls:
       - "http://169.254.169.254"
-    #timeout: 5 # (default 5)
-    #retries: 5 # (default 5)
-    #max_wait: 10 # (default -1)
+    max_wait: 30
+
 
 cloud_init_modules:
  - migrator

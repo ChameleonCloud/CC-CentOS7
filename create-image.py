@@ -10,6 +10,7 @@ except ImportError:
 import io
 import operator
 import os
+import re
 import requests
 import sys
 

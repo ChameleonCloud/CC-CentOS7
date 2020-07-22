@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ ${DIB_DEBUG_TRACE:-0} -gt 0 ]; then
+    set -x
+if
+set -eu
+set -o pipefail
+
+# Enable ufw
+ufw enable
+
+# Establish firewall rules
+ufw limit ssh
+ufw limit http
+ufw limit https
+ufw allow from 10.0.0.0/8
+ufw allow from 172.16.0.0/12
+ufw allow from 192.168.0.0/16
+ufw default deny incoming

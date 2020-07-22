@@ -72,6 +72,7 @@ yum install -y \
     systemtap-client \
     systemtap-devel \
     systemtap-runtime \
+    ufw \
     unzip
     
 pip3 install \

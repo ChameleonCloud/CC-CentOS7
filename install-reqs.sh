@@ -8,10 +8,16 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 ### OS-specific installs
-
 function centos_reqs() {
-  yum install -y epel-release
-  yum install -y qemu-img python-pip kpartx #python-virtualenv
+  DNF='dnf'
+  if [[ $VERSION_ID = '8' ]]; then
+    dnf install -y python3-pip
+  else
+    yum install -y python-pip
+    DNF='yum'
+  fi
+  $DNF install -y epel-release
+  $DNF install -y qemu-img kpartx
 }
 
 function ubuntu_reqs() {

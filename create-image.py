@@ -22,7 +22,7 @@ def image_index():
     data = {}
     current_section = None
     current_dict = {}
-    for line in index.content.split('\n'):
+    for line in index.content.decode("utf-8").split('\n'):
         if re.match('^\[.*\]$', line):
             if 'arch' in current_dict and current_dict['arch'] == 'x86_64':
                 data[current_section] = current_dict

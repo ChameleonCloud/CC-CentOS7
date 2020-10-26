@@ -14,6 +14,9 @@ set -o pipefail
 MPICH_TMP_FOLDER=/root/tmp
 mkdir -p $MPICH_TMP_FOLDER
 
+# facter is used for hostfile generation in complex appliances
+yum install facter
+
 #############################################################
 # Installation
 #############################################################
